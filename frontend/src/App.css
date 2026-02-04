@@ -1,0 +1,230 @@
+/* =========================================================
+   Global Reset & Theme Variables
+   ========================================================= */
+:root {
+  --primary: #6200ee;
+  --primary-hover: #3700b3;
+  --secondary: #03dac6;
+  --error: #b00020;
+  --bg: #f5f7fa;
+  --card-bg: #ffffff;
+  --text-main: #2d3436;
+  --text-muted: #636e72;
+  --border: #dfe6e9;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg);
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+/* =========================================================
+   Layout & Navigation
+   ========================================================= */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 5%;
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+/* =========================================================
+   Cards & Components
+   ========================================================= */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+}
+
+.auth-card {
+  max-width: 400px;
+  margin: 4rem auto;
+  text-align: center;
+}
+
+/* =========================================================
+   Quiz Phase Styling
+   ========================================================= */
+.quiz-container {
+  display: grid;
+  grid-template-columns: 1.4fr 0.6fr; /* Wide left for Flowchart, Narrow right for Qs */
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .quiz-container { grid-template-columns: 1fr; }
+}
+
+.sentence-box {
+  background: #f8f9ff;
+  border-left: 6px solid var(--primary);
+  padding: 1.5rem;
+  font-size: 1.4rem;
+  font-style: italic;
+  font-weight: 500;
+  margin: 1.5rem 0;
+}
+
+.phase-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.phase-1 { background: #e3f2fd; color: #1976d2; }
+.phase-2 { background: #e8f5e9; color: #2e7d32; }
+
+/* =========================================================
+   Buttons & Inputs
+   ========================================================= */
+input, textarea {
+  width: 100%;
+  padding: 12px 16px;
+  margin: 8px 0 20px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+button {
+  cursor: pointer;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s;
+  border: none;
+  padding: 12px 24px;
+}
+
+.option-btn {
+  background: white;
+  border: 1px solid var(--border);
+  text-align: left;
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.option-btn:hover {
+  background: #f4f0ff;
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateX(5px);
+}
+
+.render-btn, .btn-primary {
+  background: var(--primary);
+  color: white;
+  width: 100%;
+}
+
+.render-btn:hover { background: var(--primary-hover); }
+
+/* =========================================================
+   Admin Table Styling
+   ========================================================= */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.admin-table th {
+  background: #f8f9fa;
+  text-align: left;
+  padding: 12px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  border-bottom: 2px solid var(--border);
+}
+
+.admin-table td {
+  padding: 15px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.status-good { color: #2e7d32; font-weight: bold; }
+
+/* =========================================================
+   Flowchart Styling
+   ========================================================= */
+#graph {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.student-report-card {
+  border-top: 4px solid var(--primary);
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  overflow-x: auto;
+}
+
+.student-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.class-badge {
+  background: #eee;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.admin-table th {
+  background: #fdfdfd;
+  color: #333;
+}
+
+.status-good {
+  color: #2e7d32;
+  font-weight: 600;
+  background: #e8f5e9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
