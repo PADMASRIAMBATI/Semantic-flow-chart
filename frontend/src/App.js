@@ -8,13 +8,12 @@ function App() {
   const [view, setView] = useState("login");
   const [sentences, setSentences] = useState([]);
   const [currentSentenceIdx, setCurrentSentenceIdx] = useState(0);
-  const [loading, setLoading] = useState(true); // Added to prevent flickering
+  const [loading, setLoading] = useState(true);
+  const [sessionResults, setSessionResults] = useState(null); 
   const [formData, setFormData] = useState({
     name: "", class: "", email: "", password: "", confirmPassword: ""
   });
 
-  // 1. Helper: Sync index with database progress
-  // Wrapped in useCallback to prevent unnecessary re-renders
   const checkProgressAndSetView = useCallback(async (userData, allSentences) => {
     if (userData.role === "admin") {
       setView("admin");
@@ -26,14 +25,23 @@ function App() {
       const res = await fetch(`http://localhost:8000/admin/stats`);
       const allStats = await res.json();
       
-      // Filter results for THIS specific student
       const userAttempts = allStats.filter(s => s.student_name === userData.name);
       const completedCount = userAttempts.length;
 
       setCurrentSentenceIdx(completedCount);
 
-      // logic: If sentences are loaded and user finished them all
       if (allSentences.length > 0 && completedCount >= allSentences.length) {
+        // Calculate cumulative totals for the results screen
+        const totalS = userAttempts.reduce((acc, curr) => acc + curr.sentence_score, 0);
+        const totalF = userAttempts.reduce((acc, curr) => acc + curr.flowchart_score, 0);
+        const totalQs = userAttempts.reduce((acc, curr) => acc + curr.total_questions, 0);
+        
+        setSessionResults({ 
+            sScore: totalS, 
+            fScore: totalF, 
+            total: totalQs,
+            sentenceCount: completedCount
+        });
         setView("completed");
       } else {
         setView("quiz");
@@ -46,7 +54,6 @@ function App() {
     }
   }, []);
 
-  // 2. Initial Load: Fetch Data and Restore Session
   useEffect(() => {
     const initApp = async () => {
       let fetchedSentences = [];
@@ -62,13 +69,11 @@ function App() {
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
-        // Pass the fresh sentences directly to avoid waiting for state update
         await checkProgressAndSetView(parsedUser, fetchedSentences);
       } else {
         setLoading(false);
       }
     };
-
     initApp();
   }, [checkProgressAndSetView]);
 
@@ -117,6 +122,7 @@ function App() {
     setUser(null);
     setView("login");
     setCurrentSentenceIdx(0);
+    setSessionResults(null);
   };
 
   const handleQuizComplete = async (sScore, fScore, total) => {
@@ -138,12 +144,9 @@ function App() {
 
       if (!response.ok) throw new Error("Submission failed");
 
-      const nextIdx = currentSentenceIdx + 1;
-      if (nextIdx < sentences.length) {
-        setCurrentSentenceIdx(nextIdx);
-      } else {
-        setView("completed");
-      }
+      // Trigger progress check to update totals and switch view if finished
+      await checkProgressAndSetView(user, sentences);
+      
     } catch (err) {
       console.error(err);
       alert("Error saving results.");
@@ -211,12 +214,35 @@ function App() {
 
         {view === "completed" && (
           <div className="card result-card" style={{ textAlign: "center", borderTop: "5px solid var(--primary)" }}>
-            <h3>Evaluation Status</h3>
-            <p style={{ margin: "20px 0", fontSize: "1.1rem" }}>
-              Thank you, <strong>{user?.name}</strong>. You have completed all available sentences. 
-              Our records show you have submitted your analysis.
-            </p>
-            <button className="btn-primary" style={{ width: "auto" }} onClick={handleLogout}>Logout</button>
+            <h2 style={{ color: "var(--primary)" }}>All Sentences Completed! 🎉</h2>
+            
+            {sessionResults ? (
+                <div style={{ marginTop: "20px" }}>
+                    <div style={{ fontSize: "1.2rem", fontWeight: "bold", marginBottom: "20px" }}>
+                        Final Report for {user?.name}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '30px' }}>
+                        <div style={{ background: '#f0f4ff', padding: '25px', borderRadius: '15px', border: '1px solid #d0e1ff', flex: 1 }}>
+                            <p style={{ color: '#444', fontWeight: '600', marginBottom: "10px" }}>Total Marks (Phase 1)</p>
+                            <h3 style={{ fontSize: '2.2rem', color: '#6200ee' }}>{sessionResults.sScore} / {sessionResults.total}</h3>
+                        </div>
+                        <div style={{ background: '#f0fff4', padding: '25px', borderRadius: '15px', border: '1px solid #c2f0d1', flex: 1 }}>
+                            <p style={{ color: '#444', fontWeight: '600', marginBottom: "10px" }}>Total Marks (Phase 2)</p>
+                            <h3 style={{ fontSize: '2.2rem', color: '#2e7d32' }}>{sessionResults.fScore} / {sessionResults.total}</h3>
+                        </div>
+                    </div>
+
+                    <div style={{ padding: "20px", background: "#f8f9fa", borderRadius: "10px", marginBottom: "30px" }}>
+                        <p>Total Sentences Completed: <strong>{sessionResults.sentenceCount}</strong></p>
+                        <p>Total Correct Answers: <strong>{sessionResults.sScore + sessionResults.fScore}</strong></p>
+                    </div>
+                </div>
+            ) : (
+                <p>Loading your final marks...</p>
+            )}
+
+            <button className="btn-primary" style={{ width: "auto", padding: "12px 60px" }} onClick={handleLogout}>Logout</button>
           </div>
         )}
       </div>

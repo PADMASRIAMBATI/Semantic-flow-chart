@@ -5,19 +5,26 @@ export default function Quiz({ sentenceData, onComplete }) {
   const [phase, setPhase] = useState(1);
   const [qIndex, setQIndex] = useState(0);
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
+  
+  // NEW: State to track selected answer before clicking Next
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
 
-  // Reset state when a new USR_ID is loaded
   useEffect(() => {
     setPhase(1);
     setQIndex(0);
     setScores({ p1: 0, p2: 0 });
+    setSelectedAnswer(null);
   }, [sentenceData]);
 
-  const handleAnswer = (selectedText) => {
+  // Logic to move to next question/phase
+  const handleNext = () => {
+    if (!selectedAnswer) {
+      alert("Please select an answer first!");
+      return;
+    }
+
     const currentQuestion = sentenceData.questions[qIndex];
-    
-    // Logic: compare the selected button text to the mapped correct answer text
-    const isCorrect = selectedText === currentQuestion.answer;
+    const isCorrect = selectedAnswer === currentQuestion.answer;
     
     let currentP1 = scores.p1;
     let currentP2 = scores.p2;
@@ -34,6 +41,9 @@ export default function Quiz({ sentenceData, onComplete }) {
       }
     }
 
+    // Reset selection for the next question
+    setSelectedAnswer(null);
+
     // Navigation logic
     if (qIndex < sentenceData.questions.length - 1) {
       setQIndex(qIndex + 1);
@@ -43,7 +53,6 @@ export default function Quiz({ sentenceData, onComplete }) {
         setPhase(2);
         setQIndex(0);
       } else {
-        // Submit final scores for both phases to App.js
         onComplete(currentP1, currentP2, sentenceData.questions.length);
       }
     }
@@ -93,8 +102,8 @@ export default function Quiz({ sentenceData, onComplete }) {
       {/* Right Card: Dynamic Questions */}
       <div className="card" style={{ flex: '1 1 350px' }}>
         <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-           <span style={{ color: '#6200ee', fontWeight: 'bold' }}>Progress</span>
-           <span>Question {qIndex + 1} / {sentenceData.questions.length}</span>
+            <span style={{ color: '#6200ee', fontWeight: 'bold' }}>Progress</span>
+            <span>Question {qIndex + 1} / {sentenceData.questions.length}</span>
         </div>
         
         <h3 style={{ marginBottom: '25px', lineHeight: '1.4' }}>{sentenceData.questions[qIndex].q}</h3>
@@ -103,14 +112,14 @@ export default function Quiz({ sentenceData, onComplete }) {
           {sentenceData.questions[qIndex].options.map((opt, i) => (
             <button 
               key={i} 
-              onClick={() => handleAnswer(opt)} 
+              onClick={() => setSelectedAnswer(opt)} 
               className="option-btn"
               style={{
                 textAlign: 'left',
                 padding: '14px 18px',
-                border: '1px solid #ddd',
+                border: selectedAnswer === opt ? '2px solid #6200ee' : '1px solid #ddd',
                 borderRadius: '10px',
-                background: 'white',
+                background: selectedAnswer === opt ? '#f0eaff' : 'white',
                 cursor: 'pointer',
                 fontSize: '1rem',
                 transition: 'all 0.2s ease',
@@ -122,7 +131,8 @@ export default function Quiz({ sentenceData, onComplete }) {
                 marginRight: '15px', 
                 color: '#6200ee', 
                 fontWeight: 'bold',
-                background: '#f0eaff',
+                background: selectedAnswer === opt ? '#6200ee' : '#f0eaff',
+                color: selectedAnswer === opt ? 'white' : '#6200ee',
                 padding: '4px 8px',
                 borderRadius: '4px',
                 minWidth: '25px',
@@ -134,6 +144,20 @@ export default function Quiz({ sentenceData, onComplete }) {
             </button>
           ))}
         </div>
+
+        {/* NEW: Next Question / Submit Button */}
+        <button 
+          onClick={handleNext}
+          disabled={!selectedAnswer}
+          className="btn-primary"
+          style={{ 
+            marginTop: '25px', 
+            opacity: selectedAnswer ? 1 : 0.5,
+            cursor: selectedAnswer ? 'pointer' : 'not-allowed'
+          }}
+        >
+          {qIndex === sentenceData.questions.length - 1 ? "Submit Phase" : "Next Question"}
+        </button>
       </div>
     </div>
   );
